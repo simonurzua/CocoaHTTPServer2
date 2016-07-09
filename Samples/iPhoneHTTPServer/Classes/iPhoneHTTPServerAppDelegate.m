@@ -1,6 +1,7 @@
 #import "iPhoneHTTPServerAppDelegate.h"
 #import "iPhoneHTTPServerViewController.h"
 #import "HTTPServer.h"
+#define DD_LEGACY_MACROS 0
 #import "DDLog.h"
 #import "DDTTYLogger.h"
 

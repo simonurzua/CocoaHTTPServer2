@@ -11,7 +11,7 @@
 
 // Log levels: off, error, warn, info, verbose
 // Other flags : trace
-static const int httpLogLevel = HTTP_LOG_LEVEL_WARN; // | HTTP_LOG_FLAG_TRACE;
+static const int httpLogLevel = HTTP_LOG_LEVEL_WARN | HTTP_LOG_LEVEL_VERBOSE; // | HTTP_LOG_FLAG_TRACE;
 
 #define TIMEOUT_NONE          -1
 #define TIMEOUT_REQUEST_BODY  10
@@ -36,6 +36,12 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_WARN; // | HTTP_LOG_FLAG_TRACE;
 #define WS_OP_PING                 9
 #define WS_OP_PONG                 10
 
+
+static inline BOOL WS_OP_IS_FINAL_FRAGMENT(UInt8 frame)
+{
+	return (frame & 0x80) ? YES : NO;
+}
+
 static inline BOOL WS_PAYLOAD_IS_MASKED(UInt8 frame)
 {
 	return (frame & 0x80) ? YES : NO;
@@ -46,7 +52,7 @@ static inline NSUInteger WS_PAYLOAD_LENGTH(UInt8 frame)
 	return frame & 0x7F;
 }
 
-@interface WebSocket (PrivateAPI)
+@interface WebSocket (PrivateAPI)<GCDAsyncSocketDelegate>
 
 - (void)readRequestBody;
 - (void)sendResponseBody;
@@ -106,7 +112,7 @@ static inline NSUInteger WS_PAYLOAD_LENGTH(UInt8 frame)
 	if (!upgradeHeaderValue || !connectionHeaderValue) {
 		isWebSocket = NO;
 	}
-	else if (![upgradeHeaderValue caseInsensitiveCompare:@"WebSocket"] == NSOrderedSame) {
+	else if ([upgradeHeaderValue caseInsensitiveCompare:@"WebSocket"] != NSOrderedSame) {
 		isWebSocket = NO;
 	}
 	else if ([connectionHeaderValue rangeOfString:@"Upgrade" options:NSCaseInsensitiveSearch].location == NSNotFound) {
@@ -724,7 +730,7 @@ static inline NSUInteger WS_PAYLOAD_LENGTH(UInt8 frame)
 		if ([self isValidWebSocketFrame: frame])
 		{
 			nextOpCode = (frame & 0x0F);
-            finFlag = ((frame & 0xF0) != 0);
+            finFlag = WS_OP_IS_FINAL_FRAGMENT(frame);
             if(finFlag){
                 
             }

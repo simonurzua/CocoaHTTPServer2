@@ -105,6 +105,4 @@
 
 - (void)webSocketDidClose:(WebSocket *)ws;
 
-- (void)webSocket:(WebSocket *)ws didReceiveData:(NSData *)data;
-
 @end
